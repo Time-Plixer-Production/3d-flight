@@ -268,7 +268,6 @@ function Scene({
       <CameraFly to={flying ? mid : null} />
       <EffectComposer>
         <Bloom luminanceThreshold={0.1} luminanceSmoothing={0.9} intensity={0.7} />
-        <ChromaticAberration offset={[0.0004, 0.0004] as any} />
       </EffectComposer>
     </>
   );
