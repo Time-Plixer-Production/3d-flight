@@ -8,6 +8,7 @@ import {
   Line,
 } from "@react-three/drei";
 import { EffectComposer, Bloom, ChromaticAberration } from "@react-three/postprocessing";
+import { BlendFunction } from "postprocessing";
 import * as THREE from "three";
 import gsap from "gsap";
 import "./index.css";
@@ -77,7 +78,7 @@ const CITIES: Record<string, [number, number]> = {
   "jakarta": [-6.2088, 106.8456],
   "kuala lumpur": [3.139, 101.6869],
   "ho chi minh city": [10.8231, 106.6297],
-  "taipei": [25.0330, 121.5654],
+  "taipei": [25.033, 121.5654],
   "hong kong": [22.3193, 114.1694],
   "osaka": [34.6937, 135.5023],
   "auckland": [-36.8485, 174.7633],
@@ -145,7 +146,9 @@ function Earth() {
     "https://unpkg.com/three-globe/example/img/earth-topology.png",
   ]);
 
-  useFrame(() => { if (cloudsRef.current) cloudsRef.current.rotation.y += 0.00025; });
+  useFrame(() => {
+    if (cloudsRef.current) cloudsRef.current.rotation.y += 0.00025;
+  });
 
   return (
     <>
@@ -165,13 +168,19 @@ function Earth() {
       </mesh>
       <mesh ref={cloudsRef}>
         <sphereGeometry args={[1.007, 64, 64]} />
-        <meshPhongMaterial map={clouds} transparent opacity={0.38} depthWrite={false} />
+        <meshPhongMaterial
+          map={clouds}
+          transparent
+          opacity={0.38}
+          depthWrite={false}
+        />
       </mesh>
       <mesh>
         <sphereGeometry args={[1.05, 64, 64]} />
         <meshPhongMaterial
           color={new THREE.Color(0x1188ff)}
-          transparent opacity={0.07}
+          transparent
+          opacity={0.07}
           side={THREE.BackSide}
         />
       </mesh>
@@ -182,17 +191,23 @@ function Earth() {
 function CityPin({ lat, lng, label }: { lat: number; lng: number; label: string }) {
   const ref = useRef<THREE.Mesh>(null);
   const pos = latLngToVec3(lat, lng, 1.012);
+
   useFrame(({ clock }) => {
     if (ref.current) {
       const s = 1 + Math.sin(clock.getElapsedTime() * 4) * 0.35;
       ref.current.scale.setScalar(s);
     }
   });
+
   return (
     <group position={pos}>
       <mesh ref={ref}>
         <sphereGeometry args={[0.013, 16, 16]} />
-        <meshStandardMaterial color="#ff4400" emissive="#ff2200" emissiveIntensity={3} />
+        <meshStandardMaterial
+          color="#ff4400"
+          emissive="#ff2200"
+          emissiveIntensity={3}
+        />
       </mesh>
       <Html center distanceFactor={4} zIndexRange={[10, 0]}>
         <div className="city-label">{label}</div>
@@ -208,14 +223,19 @@ function Plane({ arc, onDone }: { arc: THREE.Vector3[]; onDone: () => void }) {
   useEffect(() => {
     prog.current.t = 0;
     gsap.to(prog.current, {
-      t: 1, duration: 7, ease: "power1.inOut",
+      t: 1,
+      duration: 7,
+      ease: "power1.inOut",
       onComplete: onDone,
     });
-  }, [arc]);
+  }, [arc, onDone]);
 
   useFrame(() => {
     if (!ref.current || arc.length < 2) return;
-    const idx = Math.min(Math.floor(prog.current.t * (arc.length - 1)), arc.length - 2);
+    const idx = Math.min(
+      Math.floor(prog.current.t * (arc.length - 1)),
+      arc.length - 2
+    );
     ref.current.position.copy(arc[idx]);
     ref.current.lookAt(arc[idx + 1]);
   });
@@ -223,7 +243,13 @@ function Plane({ arc, onDone }: { arc: THREE.Vector3[]; onDone: () => void }) {
   return (
     <mesh ref={ref}>
       <coneGeometry args={[0.013, 0.055, 8]} />
-      <meshStandardMaterial color="#ffffff" emissive="#88ccff" emissiveIntensity={2.5} metalness={0.9} roughness={0.1} />
+      <meshStandardMaterial
+        color="#ffffff"
+        emissive="#88ccff"
+        emissiveIntensity={2.5}
+        metalness={0.9}
+        roughness={0.1}
+      />
     </mesh>
   );
 }
@@ -233,14 +259,23 @@ function CameraFly({ to }: { to: THREE.Vector3 | null }) {
   useEffect(() => {
     if (!to) return;
     const dest = to.clone().multiplyScalar(2.6);
-    gsap.to(camera.position, { x: dest.x, y: dest.y, z: dest.z, duration: 2.8, ease: "power2.inOut" });
-  }, [to]);
+    gsap.to(camera.position, {
+      x: dest.x,
+      y: dest.y,
+      z: dest.z,
+      duration: 2.8,
+      ease: "power2.inOut",
+    });
+  }, [to, camera]);
   return null;
 }
 
 // ── Scene ─────────────────────────────────────────────────────────────────────
 function Scene({
-  origin, dest, flying, onDone,
+  origin,
+  dest,
+  flying,
+  onDone,
 }: {
   origin: [number, number] | null;
   dest: [number, number] | null;
@@ -253,21 +288,54 @@ function Scene({
   return (
     <>
       <ambientLight intensity={0.15} />
-      <directionalLight position={[5, 3, 5]} intensity={1.5} color="#fff5e0" />
+      <directionalLight
+        position={[5, 3, 5]}
+        intensity={1.5}
+        color="#fff5e0"
+      />
       <pointLight position={[-5, -3, -5]} intensity={0.3} color="#002244" />
-      <Stars radius={300} depth={60} count={10000} factor={5} saturation={0} fade speed={0.8} />
+      <Stars
+        radius={300}
+        depth={60}
+        count={10000}
+        factor={5}
+        saturation={0}
+        fade
+        speed={0.8}
+      />
       <Suspense fallback={null}>
         <Earth />
-        {origin && <CityPin lat={origin[0]} lng={origin[1]} label="🛫 Origin" />}
-        {dest && <CityPin lat={dest[0]} lng={dest[1]} label="🛬 Destination" />}
+        {origin && (
+          <CityPin lat={origin[0]} lng={origin[1]} label="🛫 Origin" />
+        )}
+        {dest && (
+          <CityPin lat={dest[0]} lng={dest[1]} label="🛬 Destination" />
+        )}
         {arc.length > 0 && (
-          <Line points={arc} color="#00cfff" lineWidth={1.8} dashed dashSize={0.03} gapSize={0.015} />
+          <Line
+            points={arc}
+            color="#00cfff"
+            lineWidth={1.8}
+            dashed
+            dashSize={0.03}
+            gapSize={0.015}
+          />
         )}
         {flying && arc.length > 0 && <Plane arc={arc} onDone={onDone} />}
       </Suspense>
       <CameraFly to={flying ? mid : null} />
       <EffectComposer>
-        <Bloom luminanceThreshold={0.1} luminanceSmoothing={0.9} intensity={0.7} />
+        <Bloom
+          luminanceThreshold={0.1}
+          luminanceSmoothing={0.9}
+          intensity={0.7}
+        />
+        <ChromaticAberration
+          blendFunction={BlendFunction.NORMAL}
+          offset={new THREE.Vector2(0.0004, 0.0004)}
+          radialModulation={false}
+          modulationOffset={0.15}
+        />
       </EffectComposer>
     </>
   );
@@ -280,19 +348,31 @@ export default function App() {
   const [origin, setOrigin] = useState<[number, number] | null>(null);
   const [dest, setDest] = useState<[number, number] | null>(null);
   const [flying, setFlying] = useState(false);
-  const [status, setStatus] = useState("Enter two cities and launch your flight ✈️");
+  const [status, setStatus] = useState(
+    "Enter two cities and launch your flight ✈️"
+  );
   const [err, setErr] = useState("");
 
   const launch = () => {
     const o = geocodeCity(from);
     const d = geocodeCity(to);
-    if (!o) { setErr(`❌ "${from}" not found — check spelling or try another city`); return; }
-    if (!d) { setErr(`❌ "${to}" not found — check spelling or try another city`); return; }
+    if (!o) {
+      setErr(
+        `❌ "${from}" not found — check spelling or try another city`
+      );
+      return;
+    }
+    if (!d) {
+      setErr(
+        `❌ "${to}" not found — check spelling or try another city`
+      );
+      return;
+    }
     setErr("");
     setOrigin(o);
     setDest(d);
     setFlying(true);
-    setStatus(`✈️  Flying ${from.trim()} → ${to.trim()}…`);
+    setStatus(`✈️ Flying ${from.trim()} → ${to.trim()}…`);
   };
 
   return (
@@ -328,14 +408,16 @@ export default function App() {
 
       <div className="panel">
         <div className="panel-title">🌍 Earth Flight Navigator</div>
-        <div className="panel-subtitle">React Three Fiber · Three.js · GSAP</div>
+        <div className="panel-subtitle">
+          React Three Fiber · Three.js · GSAP
+        </div>
 
         <div className="input-group">
           <label>Origin City</label>
           <input
             value={from}
-            onChange={e => setFrom(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && !flying && launch()}
+            onChange={(e) => setFrom(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && !flying && launch()}
             placeholder="e.g. London"
             disabled={flying}
           />
@@ -345,8 +427,8 @@ export default function App() {
           <label>Destination City</label>
           <input
             value={to}
-            onChange={e => setTo(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && !flying && launch()}
+            onChange={(e) => setTo(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && !flying && launch()}
             placeholder="e.g. Tokyo"
             disabled={flying}
           />
@@ -355,18 +437,19 @@ export default function App() {
         {err && <div className="error">{err}</div>}
 
         <button className="fly-btn" onClick={launch} disabled={flying}>
-          {flying ? "✈️  In Flight…" : "🚀 Launch Flight"}
+          {flying ? "✈️ In Flight…" : "🚀 Launch Flight"}
         </button>
 
         <div className="status">{status}</div>
 
         <div className="cities-hint">
-          <strong>80+ cities available:</strong> London, New York, Tokyo, Paris, Dubai,
-          Sydney, Singapore, Mumbai, Cairo, Berlin, Rome, Seoul, Bangkok, Istanbul,
-          Toronto, Miami, Chicago, San Francisco, Johannesburg, Hatfield, Vienna,
-          Stockholm, Athens, Nairobi, Lagos, Karachi, Manila, Jakarta, Ho Chi Minh City,
-          Hong Kong, Taipei, Osaka, Melbourne, Auckland, Denver, Seattle, Boston,
-          Washington DC, Vancouver, Montreal + many more…
+          <strong>80+ cities available:</strong> London, New York, Tokyo,
+          Paris, Dubai, Sydney, Singapore, Mumbai, Cairo, Berlin, Rome,
+          Seoul, Bangkok, Istanbul, Toronto, Miami, Chicago, San
+          Francisco, Johannesburg, Hatfield, Vienna, Stockholm, Athens,
+          Nairobi, Lagos, Karachi, Manila, Jakarta, Ho Chi Minh City,
+          Hong Kong, Taipei, Osaka, Melbourne, Auckland, Denver, Seattle,
+          Boston, Washington DC, Vancouver, Montreal + many more…
         </div>
       </div>
     </div>
