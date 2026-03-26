@@ -383,6 +383,9 @@ export default function App() {
           antialias: true,
           toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.2,
+                    preserveDrawingBuffer: true,
+          powerPreference: "high-performance",
+          alpha: false,
         }}
         style={{ width: "100vw", height: "100vh", background: "#000005" }}
       >
