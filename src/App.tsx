@@ -388,6 +388,9 @@ export default function App() {
           alpha: false,
         }}
         style={{ width: "100vw", height: "100vh" }}
+                onCreated={({ gl, scene }) => {
+                            gl.setClearColor(0x0a0e1a, 1);
+                          }}
       >
         <Scene
           origin={origin}
