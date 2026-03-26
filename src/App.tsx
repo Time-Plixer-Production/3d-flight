@@ -387,7 +387,7 @@ export default function App() {
           powerPreference: "high-performance",
           alpha: false,
         }}
-        style={{ width: "100vw", height: "100vh", background: "#000005" }}
+        style={{ width: "100vw", height: "100vh" }}
       >
         <Scene
           origin={origin}
