@@ -13,7 +13,7 @@ import * as THREE from "three";
 import gsap from "gsap";
 import "./index.css";
 
-// ── City Database ─────────────────────────────────────────────────────────────
+// ── City Database ─────────────────────────────────────────────────────────────-
 const CITIES: Record<string, [number, number]> = {
   "london": [51.5074, -0.1278],
   "new york": [40.7128, -74.006],
