@@ -1,9 +1,9 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: #000005;
+  background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
   font-family: 'Segoe UI', sans-serif;
-  overflow: hidden;
+  
 }
 
 .app {
@@ -25,7 +25,7 @@ body {
   padding: 24px;
   color: white;
   box-shadow: 0 0 40px rgba(0, 120, 255, 0.15), inset 0 1px 0 rgba(255,255,255,0.06);
-  z-index: 10;
+    z-index: 9999;
 }
 
 .panel-title {
