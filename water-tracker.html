@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Tracker - 3D Animated</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 { text-align: center; color: #333; margin-bottom: 10px; font-size: 2em; }
+        .goal-info { text-align: center; color: #666; margin-bottom: 20px; font-size: 1.1em; }
+        .progress-display { text-align: center; font-size: 2em; font-weight: bold; color: #4a90e2; margin-bottom: 20px; }
+        .glass-container {
+            width: 200px; height: 300px; margin: 20px auto;
+            position: relative; display: flex; justify-content: center; align-items: flex-end;
+        }
+        .glass {
+            width: 120px; height: 200px;
+            border: 4px solid rgba(100, 150, 200, 0.6);
+            border-top: none; border-radius: 0 0 20px 20px;
+            position: relative; overflow: hidden;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(5px);
+        }
+        .water {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(180deg, #4fc3f7 0%, #29b6f6 50%, #039be5 100%);
+            transition: height 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 0 0 16px 16px; overflow: hidden;
+        }
+        .water::before {
+            content: ''; position: absolute; top: -10px; left: 0; right: 0; height: 20px;
+            background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.4) 0%, transparent 70%);
+            animation: wave 2s ease-in-out infinite;
+        }
+        @keyframes wave { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(1.1); } }
+        .bubble {
+            position: absolute; background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%; animation: rise 3s infinite ease-in; bottom: 0;
+        }
+        @keyframes rise {
+            0% { transform: translateY(0) scale(1); opacity: 0.8; }
+            100% { transform: translateY(-200px) scale(0.5); opacity: 0; }
+        }
+        .bottle {
+            width: 100px; height: 250px;
+            border: 4px solid rgba(100, 150, 200, 0.6);
+            border-top: none; border-radius: 0 0 30px 30px;
+            position: relative; overflow: hidden;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .bottle::before {
+            content: ''; position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+            width: 40px; height: 30px;
+            border: 4px solid rgba(100, 150, 200, 0.6); border-bottom: none;
+            border-radius: 5px 5px 0 0; background: rgba(255, 255, 255, 0.3);
+        }
+        .can {
+            width: 180px; height: 220px;
+            border: 4px solid rgba(100, 150, 200, 0.6);
+            border-top: none; border-radius: 0 0 40px 40px;
+            position: relative; overflow: hidden;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .can::before {
+            content: ''; position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+            width: 60px; height: 20px;
+            border: 4px solid rgba(100, 150, 200, 0.6); border-bottom: none;
+            border-radius: 5px 5px 0 0; background: rgba(255, 255, 255, 0.3);
+        }
+        .filter {
+            width: 220px; height: 280px;
+            border: 4px solid rgba(100, 150, 200, 0.6);
+            border-top: none; border-radius: 0 0 50px 50px;
+            position: relative; overflow: hidden;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .filter::before {
+            content: ''; position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+            width: 80px; height: 40px;
+            border: 4px solid rgba(100, 150, 200, 0.6); border-bottom: none;
+            border-radius: 10px 10px 0 0; background: rgba(255, 255, 255, 0.3);
+        }
+        .buttons-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+        .ml-btn {
+            padding: 15px; font-size: 1.1em; border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; cursor: pointer; transition: all 0.3s ease; font-weight: bold;
+        }
+        .ml-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .ml-btn:active { transform: translateY(0); }
+        .custom-input-container { display: flex; gap: 10px; margin: 20px 0; }
+        .custom-input {
+            flex: 1; padding: 15px; font-size: 1em; border: 2px solid #ddd;
+            border-radius: 10px; outline: none; transition: border-color 0.3s;
+        }
+        .custom-input:focus { border-color: #667eea; }
+        .add-btn {
+            padding: 15px 30px; font-size: 1em; border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+            color: white; cursor: pointer; transition: all 0.3s ease; font-weight: bold;
+        }
+        .add-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(79, 195, 247, 0.4); }
+        .reset-btn {
+            width: 100%; padding: 15px; font-size: 1.1em; border: none; border-radius: 10px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            color: white; cursor: pointer; transition: all 0.3s ease; font-weight: bold; margin-top: 10px;
+        }
+        .reset-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4); }
+        .container-type { text-align: center; color: #666; margin-bottom: 10px; font-style: italic; }
+        .splash {
+            position: absolute; width: 10px; height: 10px;
+            background: rgba(79, 195, 247, 0.8); border-radius: 50%;
+            animation: splashAnim 0.6s ease-out forwards; pointer-events: none;
+        }
+        @keyframes splashAnim {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        @media (max-width: 600px) {
+            .container { padding: 20px; }
+            h1 { font-size: 1.5em; }
+            .glass-container { width: 150px; height: 250px; }
+            .buttons-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💧 Water Tracker</h1>
+        <p class="goal-info">Daily Goal: 2000 ml</p>
+        <div class="progress-display"><span id="currentAmount">0</span> / 2000 ml</div>
+        <div class="container-type" id="containerType">Glass Container</div>
+        <div class="glass-container" id="glassContainer">
+            <div class="glass" id="container"><div class="water" id="water"></div></div>
+        </div>
+        <div class="buttons-grid">
+            <button class="ml-btn" onclick="addWater(100)">100 ml</button>
+            <button class="ml-btn" onclick="addWater(150)">150 ml</button>
+            <button class="ml-btn" onclick="addWater(200)">200 ml</button>
+            <button class="ml-btn" onclick="addWater(250)">250 ml</button>
+            <button class="ml-btn" onclick="addWater(500)">500 ml</button>
+            <button class="ml-btn" onclick="addWater(1000)">1000 ml</button>
+        </div>
+        <div class="custom-input-container">
+            <input type="number" class="custom-input" id="customMl" placeholder="Custom ml" min="1" max="5000">
+            <button class="add-btn" onclick="addCustomWater()">Add</button>
+        </div>
+        <button class="reset-btn" onclick="resetProgress()">🔄 Reset Daily Progress</button>
+    </div>
+    <script>
+        class WaterTracker {
+            constructor() {
+                this.currentAmount = 0;
+                this.dailyGoal = 2000;
+                this.maxCapacity = 5000;
+                this.waterElement = document.getElementById('water');
+                this.containerElement = document.getElementById('container');
+                this.containerTypeElement = document.getElementById('containerType');
+                this.currentAmountElement = document.getElementById('currentAmount');
+                this.glassContainer = document.getElementById('glassContainer');
+                this.loadFromLocalStorage();
+                this.updateDisplay();
+                this.createBubbles();
+            }
+            loadFromLocalStorage() {
+                const today = new Date().toDateString();
+                const savedDate = localStorage.getItem('waterTrackerDate');
+                const savedAmount = localStorage.getItem('waterTrackerAmount');
+                if (savedDate === today && savedAmount) {
+                    this.currentAmount = parseInt(savedAmount);
+                } else {
+                    this.currentAmount = 0;
+                }
+            }
+            saveToLocalStorage() {
+                const today = new Date().toDateString();
+                localStorage.setItem('waterTrackerDate', today);
+                localStorage.setItem('waterTrackerAmount', this.currentAmount.toString());
+            }
+            getContainerType(amount) {
+                if (amount <= 500) return { type: 'glass', name: 'Glass Container', maxHeight: 200 };
+                else if (amount <= 1000) return { type: 'bottle', name: 'Water Bottle', maxHeight: 250 };
+                else if (amount <= 2000) return { type: 'can', name: 'Water Can', maxHeight: 220 };
+                else return { type: 'filter', name: 'Water Filter', maxHeight: 280 };
+            }
+            updateContainerStyle() {
+                const containerInfo = this.getContainerType(this.currentAmount);
+                this.containerElement.className = '';
+                this.containerElement.classList.add(containerInfo.type);
+                this.containerTypeElement.textContent = containerInfo.name;
+                const percentage = Math.min((this.currentAmount / this.getMaxForContainer()) * 100, 100);
+                this.waterElement.style.height = percentage + '%';
+            }
+            getMaxForContainer() {
+                if (this.currentAmount <= 500) return 500;
+                if (this.currentAmount <= 1000) return 1000;
+                if (this.currentAmount <= 2000) return 2000;
+                return 5000;
+            }
+            addWater(amount) {
+                if (this.currentAmount + amount > this.maxCapacity) {
+                    alert('Maximum capacity reached (5000 ml)!');
+                    return;
+                }
+                this.currentAmount += amount;
+                this.saveToLocalStorage();
+                this.updateDisplay();
+                this.createSplash();
+                this.updateContainerStyle();
+            }
+            addCustomWater() {
+                const customInput = document.getElementById('customMl');
+                const amount = parseInt(customInput.value);
+                if (isNaN(amount) || amount <= 0) {
+                    alert('Please enter a valid amount!');
+                    return;
+                }
+                if (amount > 5000) {
+                    alert('Maximum single addition is 5000 ml!');
+                    return;
+                }
+                this.addWater(amount);
+                customInput.value = '';
+            }
+            updateDisplay() {
+                this.currentAmountElement.textContent = this.currentAmount;
+                let percentage;
+                if (this.currentAmount <= 500) percentage = (this.currentAmount / 500) * 100;
+                else if (this.currentAmount <= 1000) percentage = ((this.currentAmount - 500) / 500) * 100;
+                else if (this.currentAmount <= 2000) percentage = ((this.currentAmount - 1000) / 1000) * 100;
+                else percentage = ((this.currentAmount - 2000) / 3000) * 100;
+                percentage = Math.min(percentage, 100);
+                this.waterElement.style.height = percentage + '%';
+                this.updateContainerStyle();
+            }
+            createSplash() {
+                const splash = document.createElement('div');
+                splash.className = 'splash';
+                splash.style.left = (Math.random() * 80 + 10) + '%';
+                splash.style.top = (Math.random() * 20 + 40) + '%';
+                this.glassContainer.appendChild(splash);
+                setTimeout(() => { splash.remove(); }, 600);
+            }
+            createBubbles() {
+                setInterval(() => {
+                    if (this.currentAmount > 0) {
+                        const bubble = document.createElement('div');
+                        bubble.className = 'bubble';
+                        bubble.style.left = (Math.random() * 80 + 10) + '%';
+                        bubble.style.width = (Math.random() * 10 + 5) + 'px';
+                        bubble.style.height = bubble.style.width;
+                        bubble.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                        this.waterElement.appendChild(bubble);
+                        setTimeout(() => { bubble.remove(); }, 4000);
+                    }
+                }, 300);
+            }
+            resetProgress() {
+                if (confirm('Are you sure you want to reset your daily progress?')) {
+                    this.currentAmount = 0;
+                    this.saveToLocalStorage();
+                    this.updateDisplay();
+                }
+            }
+        }
+        let tracker;
+        function initApp() {
+            tracker = new WaterTracker();
+            window.addWater = function(amount) { tracker.addWater(amount); };
+            window.addCustomWater = function() { tracker.addCustomWater(); };
+            window.resetProgress = function() { tracker.resetProgress(); };
+        }
+        document.addEventListener('DOMContentLoaded', initApp);
+        function runSelfTests() {
+            console.log('Running self-tests...');
+            if (tracker) console.log('✓ Tracker initialized');
+            else console.log('✗ Tracker not initialized');
+            tracker.addWater(100);
+            const saved = localStorage.getItem('waterTrackerAmount');
+            if (saved === '100') console.log('✓ LocalStorage saving works');
+            else console.log('✗ LocalStorage saving failed');
+            tracker.addWater(400);
+            let containerInfo = tracker.getContainerType(500);
+            if (containerInfo.type === 'glass') console.log('✓ Glass container at 500ml');
+            tracker.addWater(100);
+            containerInfo = tracker.getContainerType(600);
+            if (containerInfo.type === 'bottle') console.log('✓ Bottle container at 600ml');
+            tracker.addWater(500);
+            containerInfo = tracker.getContainerType(1100);
+            if (containerInfo.type === 'can') console.log('✓ Can container at 1100ml');
+            tracker.addWater(1000);
+            containerInfo = tracker.getContainerType(2100);
+            if (containerInfo.type === 'filter') console.log('✓ Filter container at 2100ml');
+            console.log('Self-tests completed!');
+        }
+        setTimeout(runSelfTests, 2000);
+    </script>
+</body>
+</html>
